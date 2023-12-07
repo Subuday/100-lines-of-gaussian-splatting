@@ -3,19 +3,23 @@ import numpy as np
 import torch
 from argparse import ArgumentParser
 
+from params import TrainingParams, ModelParams
+
+
+def train(training_params, model_params):
+    pass
+
+
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--source_path")
-    parser.add_argument("--model_path", default="output/")
-    parser.add_argument("--sh_degree", default=3)
-
-    parser.add_argument("--feature_lr", default=1e-4)
-
+    parser.add_argument("--model_path", default=None)
     parser.add_argument("--iterations", default=30_000)
     parser.add_argument("--test_iterations", nargs="+", type=int, default=[7_000, 30_000])
     parser.add_argument("--save_iterations", nargs="+", type=int, default=[7_000, 30_000])
     parser.add_argument("--checkpoint_iterations", nargs="+", type=int, default=[])
 
+    parser.add_argument("--sh_degree", default=3)
     parser.add_argument('--feature_lr', type=float, default=0.0025,
                         help='Spherical harmonics features learning rate, 0.0025 by default.')
     parser.add_argument('--opacity_lr', type=float, default=0.05,
@@ -64,3 +68,5 @@ if __name__ == "__main__":
     random.seed(0)
     np.random.seed(0)
     torch.manual_seed(0)
+
+    train(TrainingParams(args), ModelParams(args))
