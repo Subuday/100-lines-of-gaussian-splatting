@@ -1,5 +1,7 @@
+import random
+import numpy as np
+import torch
 from argparse import ArgumentParser
-
 
 if __name__ == "__main__":
     parser = ArgumentParser()
@@ -58,3 +60,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     args.save_iterations.append(args.iterations)
+
+    random.seed(0)
+    np.random.seed(0)
+    torch.manual_seed(0)
