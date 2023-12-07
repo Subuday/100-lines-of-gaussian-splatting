@@ -55,3 +55,4 @@ if __name__ == "__main__":
                                                                            "a look.")
     parser.add_argument("--debug_from", help="Debugging is slow. You may specify an iteration (starting from 0) after "
                                              "which the above debugging becomes active.")
+    args = parser.parse_args()
