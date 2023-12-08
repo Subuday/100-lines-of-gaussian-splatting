@@ -1,4 +1,6 @@
+import os
 import random
+import uuid
 import numpy as np
 import torch
 from argparse import ArgumentParser
@@ -6,8 +8,14 @@ from argparse import ArgumentParser
 from params import TrainingParams, ModelParams
 
 
+def prepare_output_dir(params):
+    if not params.model_path:
+        params.model_path = os.path.join("./output/", str(uuid.uuid4()))
+    os.makedirs(params.model_path, exist_ok=True)
+
+
 def train(training_params, model_params):
-    pass
+    prepare_output_dir(training_params)
 
 
 if __name__ == "__main__":
