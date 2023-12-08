@@ -2,6 +2,7 @@ class TrainingParams:
 
     def __init__(self, args):
         self.source_path = args.source_path
+        self.images = args.images
         self.model_path = args.model_path
         self.iterations = args.iterations
         self.test_iterations = args.test_iterations

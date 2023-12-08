@@ -21,6 +21,7 @@ def train(training_params, model_params):
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--source_path")
+    parser.add_argument("--images", default="images", help="Alternative subdirectory for COLMAP images (images by default).")
     parser.add_argument("--model_path", default=None)
     parser.add_argument("--iterations", default=30_000)
     parser.add_argument("--test_iterations", nargs="+", type=int, default=[7_000, 30_000])
