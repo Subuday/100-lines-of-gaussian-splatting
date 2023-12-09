@@ -1,11 +1,14 @@
 import os
-import random
 import uuid
 import numpy as np
 import torch
+import random
 from argparse import ArgumentParser
-
+from random import randint
+from model import GaussianModel
 from params import TrainingParams, ModelParams
+from scene import Scene
+from utils.loss_utils import l1_loss, ssim
 
 
 def prepare_output_dir(params):
@@ -17,11 +20,29 @@ def prepare_output_dir(params):
 def train(training_params, model_params):
     prepare_output_dir(training_params)
 
+    model = GaussianModel()
+    scene = Scene(training_params, model_params)
+
+    cameras = None
+    for i in range(1, training_params.iterations + 1):
+        if not cameras:
+            cameras = scene.train_cameras.copy()
+        camera = cameras.pop(randint(0, len(cameras) - 1))
+
+        rendered_image = camera.original_image
+        original_image = camera.original_image
+
+        loss = (1.0 - model_params.lambda_dssim) * l1_loss(rendered_image, original_image) + \
+               model_params.lambda_dssim * (1.0 - ssim(rendered_image, original_image))
+        # loss.backward()
+        print("Iteration: {}, Loss: {}".format(i, loss.item()))
+
 
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--source_path")
-    parser.add_argument("--images", default="images", help="Alternative subdirectory for COLMAP images (images by default).")
+    parser.add_argument("--images", default="images",
+                        help="Alternative subdirectory for COLMAP images (images by default).")
     parser.add_argument("--model_path", default=None)
     parser.add_argument("--iterations", default=30_000)
     parser.add_argument("--test_iterations", nargs="+", type=int, default=[7_000, 30_000])
