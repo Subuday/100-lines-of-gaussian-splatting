@@ -7,6 +7,7 @@ from argparse import ArgumentParser
 from random import randint
 from model import GaussianModel
 from params import TrainingParams, ModelParams
+from render import render
 from scene import Scene
 from utils.loss_utils import l1_loss, ssim
 
@@ -29,6 +30,7 @@ def train(training_params, model_params):
             cameras = scene.train_cameras.copy()
         camera = cameras.pop(randint(0, len(cameras) - 1))
 
+        render(camera, model)
         rendered_image = camera.original_image
         original_image = camera.original_image
 
