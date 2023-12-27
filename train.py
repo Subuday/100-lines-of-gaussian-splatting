@@ -21,7 +21,7 @@ def train(training_params, model_params):
     prepare_output_dir(training_params)
 
     model = GaussianModel()
-    scene = Scene(training_params, model_params)
+    scene = Scene(model, training_params, model_params)
 
     cameras = None
     for i in range(1, training_params.iterations + 1):
