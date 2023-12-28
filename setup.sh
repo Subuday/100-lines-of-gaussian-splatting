@@ -13,5 +13,15 @@ pip install -r requirements+cuda.txt
 pip install submodules/diff-gaussian-rasterization
 deactivate
 
+if [ ! -d "data" ]; then
+mkdir -p "data"
+fi
 
-
+if [ ! -d "data/garden" ]; then
+mkdir -p "data/garden"
+wget https://huggingface.co/datasets/Subuday/GaussianSplatting/resolve/main/garden.tgz
+tar -xvf garden.tgz
+rm garden.tgz
+rm ._garden
+mv garden data/
+fi
