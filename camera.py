@@ -1,4 +1,6 @@
 from torch import nn
+import torch
+from utils.graphics_utils import getWorld2View2
 
 
 class Camera(nn.Module):
@@ -16,3 +18,4 @@ class Camera(nn.Module):
         self.image_height = self.original_image.shape[1]
         self.z_far = 100.0
         self.z_near = 0.01
+        self.world_2_camera_transform = self.world_view_transform = torch.tensor(getWorld2View2(R, T)).transpose(0, 1)
