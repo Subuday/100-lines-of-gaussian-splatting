@@ -2,6 +2,9 @@ import numpy as np
 import torch
 
 
+def inverse_sigmoid(x):
+    return torch.log(x/(1-x))
+
 def pil_to_torch(pil_image, resolution):
     resized_image_PIL = pil_image.resize(resolution)
     resized_image = torch.from_numpy(np.array(resized_image_PIL)) / 255.0
