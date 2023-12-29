@@ -11,6 +11,7 @@ fi
 . venv/bin/activate
 pip install -r requirements+cuda.txt
 pip install submodules/diff-gaussian-rasterization
+pip install submodules/simple-knn
 deactivate
 
 if [ ! -d "data" ]; then
