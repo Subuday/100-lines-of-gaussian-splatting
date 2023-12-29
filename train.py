@@ -18,10 +18,10 @@ def prepare_output_dir(params):
     os.makedirs(params.model_path, exist_ok=True)
 
 
-def train(training_params, model_params):
+def train(training_params, model_params, device):
     prepare_output_dir(training_params)
 
-    model = GaussianModel()
+    model = GaussianModel(model_params, device=device)
     scene = Scene(model, training_params, model_params)
 
     cameras = None
@@ -30,7 +30,7 @@ def train(training_params, model_params):
             cameras = scene.train_cameras.copy()
         camera = cameras.pop(randint(0, len(cameras) - 1))
 
-        render(camera, model)
+        render(camera, model, debug=training_params.debug, device=device)
         rendered_image = camera.original_image
         original_image = camera.original_image
 
@@ -101,4 +101,6 @@ if __name__ == "__main__":
     np.random.seed(0)
     torch.manual_seed(0)
 
-    train(TrainingParams(args), ModelParams(args))
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    train(TrainingParams(args), ModelParams(args), device)
