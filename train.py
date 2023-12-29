@@ -30,13 +30,13 @@ def train(training_params, model_params, device):
             cameras = scene.train_cameras.copy()
         camera = cameras.pop(randint(0, len(cameras) - 1))
 
-        render(camera, model, debug=training_params.debug, device=device)
-        rendered_image = camera.original_image
-        original_image = camera.original_image
+        render_res = render(camera, model, debug=training_params.debug, device=device)
 
+        rendered_image = render_res["image"]
+        original_image = camera.original_image.to(device)
         loss = (1.0 - model_params.lambda_dssim) * l1_loss(rendered_image, original_image) + \
                model_params.lambda_dssim * (1.0 - ssim(rendered_image, original_image))
-        # loss.backward()
+        loss.backward()
         print("Iteration: {}, Loss: {}".format(i, loss.item()))
 
 
