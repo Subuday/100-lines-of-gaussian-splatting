@@ -1,6 +1,6 @@
 from torch import nn
 import torch
-from utils.graphics_utils import getWorld2View2
+from utils.graphics_utils import getProjectionMatrix, getWorld2View2
 
 
 class Camera(nn.Module):
@@ -18,4 +18,7 @@ class Camera(nn.Module):
         self.image_height = self.original_image.shape[1]
         self.z_far = 100.0
         self.z_near = 0.01
-        self.world_2_camera_transform = self.world_view_transform = torch.tensor(getWorld2View2(R, T)).transpose(0, 1)
+        self.world_2_camera_transform = torch.tensor(getWorld2View2(R, T)).transpose(0, 1)
+        self.camera_2_clip_transform = getProjectionMatrix(znear=self.z_near, zfar=self.z_far, fovX=self.FoVx, fovY=self.FoVy).transpose(0,1)
+        self.world_2_clip_transform = self.camera_2_clip_transform @ self.world_2_camera_transform
+        self.camera_center = self.world_2_camera_transform.inverse()[3, :3]
