@@ -38,8 +38,8 @@ def render(camera: Camera, model: GaussianModel, scaling_modifier=1.0, override_
     # Those Gaussians that were frustum culled or had a radius of 0 were not visible.
     # They will be excluded from value updates used in the splitting criteria.
     return {
-            "render": rendered_image,
-            "viewspace_points": clip_points,
+            "image": rendered_image,
+            "clip_points": clip_points,
             "visibility_filter" : radii > 0,
             "radii": radii
             }
