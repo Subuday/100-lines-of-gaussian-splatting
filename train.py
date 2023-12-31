@@ -40,15 +40,15 @@ def train(training_params, model_params, device):
         print("Iteration: {}, Loss: {}".format(i, loss.item()))
 
         with torch.no_grad():
-            if i < training_params.densify_until_iter:
+            if i < model_params.densify_until_iter:
                 gaussians_visibility = render_res["visibility_filter"]
                 gaussians_radiuses = render_res["radii"]
                 model.gaussians_max_radiuses[gaussians_visibility] = torch.max(
                     model.gaussians_max_radiuses[gaussians_visibility], gaussians_radiuses[gaussians_visibility]
                 )
-                points_in_camera_coordinates = render_res["viewspace_points"]
+                clip_points = render_res["clip_points"]
                 model.point_cloud_gradient_accum[gaussians_visibility] += torch.norm(
-                    points_in_camera_coordinates.grad[gaussians_visibility, :2],
+                    clip_points.grad[gaussians_visibility, :2],
                     dim=-1,
                     keepdim=True
                 )
