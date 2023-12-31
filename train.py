@@ -22,7 +22,9 @@ def train(training_params, model_params, device):
     prepare_output_dir(training_params)
 
     model = GaussianModel(model_params, device=device)
+
     scene = Scene(model, training_params, model_params)
+    model.setup_training_params(model_params)
 
     cameras = None
     for i in range(1, training_params.iterations + 1):
@@ -54,8 +56,8 @@ def train(training_params, model_params, device):
                 )
                 model.denom[gaussians_visibility] += 1
 
-                if i > training_params.densify_from_iter and i % training_params.densification_interval == 0:
-                    model.densify_and_prune_gaussians(training_params.densify_grad_threshold)
+                if i > model_params.densify_from_iter and i % model_params.densification_interval == 0:
+                    model.densify_and_prune_gaussians(model_params.densify_grad_threshold)
 
 
 
