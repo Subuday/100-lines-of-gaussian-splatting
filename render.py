@@ -22,10 +22,10 @@ def render(camera: Camera, model: GaussianModel, scaling_modifier=1.0, override_
     )
     rasterizer = GaussianRasterizer(raster_settings=settings)
 
-    clip_points = torch.zeros_like(model.param_point_cloud, dtype=model.param_point_cloud.dtype, requires_grad=True)
+    clip_points = torch.zeros_like(model.point_cloud, dtype=model.point_cloud.dtype, requires_grad=True)
 
     rendered_image, radii = rasterizer(
-        means3D = model.param_point_cloud,
+        means3D = model.point_cloud,
         means2D = clip_points,
         shs = model.features,
         colors_precomp = None,
