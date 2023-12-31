@@ -32,6 +32,10 @@ class GaussianModel:
     @property
     def features(self):
         return torch.cat((self._features_dc, self._features_rest), dim=1)
+    
+    @property
+    def opacity(self):
+        return torch.sigmoid(self._opacity)
 
     @property
     def scaling(self):
