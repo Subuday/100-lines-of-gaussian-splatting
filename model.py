@@ -40,6 +40,10 @@ class GaussianModel:
     @property
     def scaling(self):
         return torch.exp(self._scaling)
+    
+    @property
+    def rotation(self):
+        return torch.nn.functional.normalize(self._rotation)
 
     def densify_and_prune_gaussians(self, grad_threshold):
         camera_extent = self.spatial_lr_scale
