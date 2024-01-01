@@ -32,7 +32,7 @@ class GaussianModel:
     @property
     def features(self):
         return torch.cat((self._features_dc, self._features_rest), dim=1)
-    
+
     @property
     def opacity(self):
         return torch.sigmoid(self._opacity)
@@ -40,12 +40,12 @@ class GaussianModel:
     @property
     def scaling(self):
         return torch.exp(self._scaling)
-    
+
     @property
     def rotation(self):
         return torch.nn.functional.normalize(self._rotation)
 
-    def densify_and_prune_gaussians(self, grad_threshold):
+    def densify_and_prune_gaussians(self, grad_threshold, max_screen_size, min_opacity=0.005):
         camera_extent = self.spatial_lr_scale
 
         grads = self.point_cloud_gradient_accum / self.denom
@@ -53,6 +53,16 @@ class GaussianModel:
 
         self.clone_gaussians(grads, grad_threshold, camera_extent)
         self.split_gaussians(grads, grad_threshold, camera_extent)
+
+        prune_mask = (self.opacity < min_opacity).squeeze()
+        if max_screen_size:
+            big_points_vs = self.gaussians_max_radiuses > max_screen_size
+            big_points_ws = self.scaling.max(dim=1).values > 0.1 * camera_extent
+            prune_mask = torch.logical_or(torch.logical_or(prune_mask, big_points_vs), big_points_ws)
+        self.prune_gaussians(prune_mask)
+
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
 
     def clone_gaussians(self, grads, grad_threshold, camera_extent):
         selected_points = torch.where(torch.norm(grads, dim=-1) >= grad_threshold, True, False)
@@ -112,7 +122,10 @@ class GaussianModel:
             new_rotation
         )
 
-
+        prune_filter = torch.cat(
+            (selected_points, torch.zeros(N * selected_points.sum(), device=self.device, dtype=bool))
+        )
+        self.prune_gaussians(prune_filter)
 
     def update_gaussians_after_densification(
             self,
@@ -174,8 +187,39 @@ class GaussianModel:
                 updated_params[group["name"]] = group["params"][0]
         return updated_params
 
-    def prune_gaussians(self):
-        pass
+    def prune_gaussians(self, mask):
+        valid_points_mask = ~mask
+        updated_params = self.prune_optimizer(valid_points_mask)
+
+        self._point_cloud = updated_params["point_cloud"]
+        self._features_dc = updated_params["f_dc"]
+        self._features_rest = updated_params["f_rest"]
+        self._opacity = updated_params["opacity"]
+        self._scaling = updated_params["scaling"]
+        self._rotation = updated_params["rotation"]
+
+        self.point_cloud_gradient_accum = self.point_cloud_gradient_accum[valid_points_mask]
+
+        self.denom = self.denom[valid_points_mask]
+        self.gaussians_max_radiuses = self.gaussians_max_radiuses[valid_points_mask]
+
+    def prune_optimizer(self, mask):
+        updated_params = {}
+        for group in self.optimizer.param_groups:
+            stored_state = self.optimizer.state.get(group['params'][0], None)
+            if stored_state is not None:
+                stored_state["exp_avg"] = stored_state["exp_avg"][mask]
+                stored_state["exp_avg_sq"] = stored_state["exp_avg_sq"][mask]
+
+                del self.optimizer.state[group['params'][0]]
+                group["params"][0] = nn.Parameter((group["params"][0][mask].requires_grad_(True)))
+                self.optimizer.state[group['params'][0]] = stored_state
+
+                updated_params[group["name"]] = group["params"][0]
+            else:
+                group["params"][0] = nn.Parameter(group["params"][0][mask].requires_grad_(True))
+                updated_params[group["name"]] = group["params"][0]
+        return updated_params
 
     def init_from_scene_info(self, scene_info):
         self.spatial_lr_scale = scene_info.nerf_normalization["radius"]
